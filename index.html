@@ -101,22 +101,64 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .btn-ghost:hover { border-color: var(--muted); }
 .btn-sm { padding: 10px 16px; font-size: 0.9rem; }
 
-/* Hero */
-.hero .wrap { display: grid; grid-template-columns: 1.05fr 1fr; gap: 56px; align-items: center; padding-block: 80px 72px; }
+/* Hero film: always dark, whatever the theme, so the headline reads over footage. */
+.hero {
+  --film-bg: #060912;
+  --film-ink: #f3f6fc;
+  --film-muted: #b4bfd4;
+  --film-accent: #8fa2ff;
+  position: relative; isolation: isolate; overflow: hidden;
+  background: var(--film-bg); color: var(--film-ink);
+  min-height: min(88vh, 860px);
+  display: flex; align-items: center;
+}
+.film, .film video, .film canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.film { z-index: -1; }
+.film video { object-fit: cover; }
+.film video:not([src]) { display: none; }
+.film::after {
+  content: ""; position: absolute; inset: 0;
+  background:
+    linear-gradient(90deg, rgba(6,9,18,.86) 0%, rgba(6,9,18,.55) 48%, rgba(6,9,18,.2) 100%),
+    linear-gradient(0deg, rgba(6,9,18,.9) 0%, rgba(6,9,18,0) 35%),
+    radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.55) 100%);
+}
+.grain {
+  position: absolute; inset: -50%; z-index: 1; pointer-events: none; opacity: .07;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain 1s steps(4) infinite;
+}
+@keyframes grain { 25% { transform: translate(-3%, 2%); } 50% { transform: translate(2%, -3%); } 75% { transform: translate(-2%, -1%); } }
+.film-toggle {
+  position: absolute; z-index: 2;
+  right: max(16px, env(safe-area-inset-right, 0px)); bottom: 20px;
+  display: inline-flex; align-items: center; gap: 8px;
+  font: 500 0.75rem/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase;
+  color: var(--film-ink); background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.18);
+  padding: 9px 12px; border-radius: 999px; cursor: pointer; backdrop-filter: blur(6px);
+}
+.film-toggle:hover { background: rgba(255,255,255,.16); }
+.hero .wrap { position: relative; z-index: 1; width: 100%; display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 56px; align-items: center; padding-block: 96px 88px; }
 .hero-copy { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
-.hero h1 { font-size: clamp(2.5rem, 5.6vw, 4.4rem); font-weight: 700; }
-.hero h1 em { font-style: normal; color: var(--accent); }
-.lede { font-size: 1.2rem; color: var(--muted); max-width: 34ch; }
+.hero .eyebrow { color: var(--film-muted); }
+.hero h1 { font-size: clamp(2.6rem, 6vw, 4.9rem); font-weight: 700; text-shadow: 0 2px 30px rgba(0,0,0,.35); }
+.hero h1 em { font-style: normal; color: var(--film-accent); }
+.lede { font-size: 1.2rem; color: var(--film-muted); max-width: 36ch; }
+.hero .btn-primary { background: var(--film-ink); color: var(--film-bg); }
+.hero .btn-ghost { border-color: rgba(255,255,255,.3); color: var(--film-ink); }
+.hero .btn-ghost:hover { border-color: var(--film-ink); }
 .cta-row { display: flex; flex-wrap: wrap; gap: 12px; }
-.proof { display: flex; flex-wrap: wrap; gap: 8px 22px; font: 400 0.85rem/1.4 var(--font-mono); color: var(--muted); }
-.proof b { color: var(--ink); font-weight: 500; }
+.proof { display: flex; flex-wrap: wrap; gap: 8px 22px; font: 400 0.85rem/1.4 var(--font-mono); color: var(--film-muted); }
+.proof b { color: var(--film-ink); font-weight: 500; }
 
 .session {
   min-width: 0;
-  background: var(--panel); color: var(--panel-ink);
+  background: rgba(8, 12, 22, .62); color: var(--panel-ink);
+  border: 1px solid rgba(255,255,255,.1);
+  backdrop-filter: blur(14px);
   border-radius: 18px; padding: 20px;
   font: 400 0.9rem/1.55 var(--font-mono);
-  box-shadow: 0 30px 60px -30px rgba(15, 26, 42, .45);
+  box-shadow: 0 30px 60px -30px rgba(0, 0, 0, .6);
 }
 .session-bar { display: flex; justify-content: space-between; align-items: center; color: var(--panel-muted); font-size: 0.78rem; padding-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,.08); }
 .live { display: inline-flex; align-items: center; gap: 8px; }
@@ -188,7 +230,8 @@ footer a:hover { color: var(--ink); }
 
 @media (max-width: 880px) {
   .hero .wrap, .cta-card { grid-template-columns: 1fr; }
-  .hero .wrap { padding-block: 48px 56px; gap: 40px; }
+  .hero .wrap { padding-block: 56px 80px; gap: 40px; }
+  .hero { min-height: 0; }
   .features, .steps, .uses { grid-template-columns: 1fr; }
   .nav-links { display: none; }
   .band .wrap { padding-block: 64px; }
@@ -215,6 +258,12 @@ footer a:hover { color: var(--ink); }
 
 <main id="top">
   <section class="hero">
+    <div class="film" aria-hidden="true">
+      <canvas id="film-canvas"></canvas>
+      <video id="film-video" muted loop playsinline preload="metadata"></video>
+    </div>
+    <div class="grain" aria-hidden="true"></div>
+    <button class="film-toggle" id="film-toggle" type="button" aria-pressed="false">❚❚ Pause film</button>
     <div class="wrap">
       <div class="hero-copy">
         <span class="eyebrow" data-site="category">AI assistant · Early access</span>
@@ -393,7 +442,10 @@ const SITE = {
   cta: null,       // e.g. "Join the waitlist"
   email: null,     // e.g. "hello@nova.ai"
   // Paste a form endpoint (Formspree, Tally, Google Apps Script, ...) to collect sign-ups.
-  formEndpoint: null
+  formEndpoint: null,
+  // Hero film: path or URL to an .mp4/.webm, e.g. "assets/hero.mp4". Leave null to show the animated fallback.
+  heroVideo: null,
+  heroPoster: null // optional still image shown while the video loads, e.g. "assets/hero-poster.jpg"
 };
 
 document.querySelectorAll("[data-site]").forEach(el => {
@@ -402,6 +454,91 @@ document.querySelectorAll("[data-site]").forEach(el => {
 });
 if (SITE.brand) document.title = SITE.brand;
 document.getElementById("year").textContent = new Date().getFullYear();
+
+/* Hero film: real video when SITE.heroVideo is set, otherwise a generated light-field. */
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const video = document.getElementById("film-video");
+const canvas = document.getElementById("film-canvas");
+const toggle = document.getElementById("film-toggle");
+let playing = !reduceMotion;
+
+if (SITE.heroPoster) video.poster = SITE.heroPoster;
+if (SITE.heroVideo) {
+  video.src = SITE.heroVideo;
+  video.addEventListener("loadeddata", () => { canvas.style.opacity = 0; }, { once: true });
+  video.addEventListener("error", () => video.removeAttribute("src"), { once: true });
+  if (playing) video.play().catch(() => {});
+}
+
+const ctx = canvas.getContext("2d");
+let w = 0, h = 0, t = 0, raf = 0;
+const lines = Array.from({ length: 34 }, (_, i) => ({
+  y: 0.18 + (i / 34) * 0.78,
+  amp: 0.03 + Math.random() * 0.07,
+  freq: 1.2 + Math.random() * 2.2,
+  speed: 0.15 + Math.random() * 0.35,
+  phase: Math.random() * Math.PI * 2,
+  hue: i % 7 === 0 ? 24 : 228 + Math.random() * 20
+}));
+const orbs = Array.from({ length: 5 }, (_, i) => ({
+  x: Math.random(), y: Math.random(), r: 0.25 + Math.random() * 0.25,
+  dx: (Math.random() - .5) * 0.02, dy: (Math.random() - .5) * 0.02,
+  hue: i === 0 ? 24 : 225 + i * 6
+}));
+
+function resize() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  w = canvas.clientWidth; h = canvas.clientHeight;
+  canvas.width = w * dpr; canvas.height = h * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  draw();
+}
+
+function draw() {
+  ctx.globalCompositeOperation = "source-over";
+  ctx.fillStyle = "#060912";
+  ctx.fillRect(0, 0, w, h);
+  ctx.globalCompositeOperation = "lighter";
+  for (const o of orbs) {
+    const x = ((o.x + o.dx * t) % 1 + 1) % 1 * w, y = ((o.y + o.dy * t) % 1 + 1) % 1 * h;
+    const g = ctx.createRadialGradient(x, y, 0, x, y, o.r * Math.max(w, h));
+    g.addColorStop(0, `hsla(${o.hue}, 85%, 55%, ${o.hue === 24 ? .16 : .22})`);
+    g.addColorStop(1, "hsla(230, 80%, 40%, 0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, w, h);
+  }
+  ctx.lineWidth = 1.2;
+  for (const l of lines) {
+    ctx.beginPath();
+    for (let x = 0; x <= w; x += 8) {
+      const u = x / w;
+      const y = (l.y + Math.sin(u * l.freq * Math.PI * 2 + l.phase + t * l.speed) * l.amp
+        + Math.sin(u * 3.1 - t * 0.2 + l.phase) * 0.02) * h;
+      x ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+    }
+    const fade = ctx.createLinearGradient(0, 0, w, 0);
+    fade.addColorStop(0, `hsla(${l.hue}, 90%, 65%, 0)`);
+    fade.addColorStop(0.55, `hsla(${l.hue}, 90%, 65%, ${l.hue === 24 ? .55 : .32})`);
+    fade.addColorStop(1, `hsla(${l.hue}, 90%, 70%, .12)`);
+    ctx.strokeStyle = fade;
+    ctx.stroke();
+  }
+}
+
+function loop() { t += 1 / 60; draw(); raf = requestAnimationFrame(loop); }
+function setPlaying(on) {
+  playing = on;
+  cancelAnimationFrame(raf);
+  if (on) loop();
+  if (video.getAttribute("src")) on ? video.play().catch(() => {}) : video.pause();
+  document.querySelector(".grain").style.animationPlayState = on ? "running" : "paused";
+  toggle.textContent = on ? "❚❚ Pause film" : "▶ Play film";
+  toggle.setAttribute("aria-pressed", String(!on));
+}
+toggle.addEventListener("click", () => setPlaying(!playing));
+addEventListener("resize", resize);
+resize();
+setPlaying(playing);
 
 const form = document.getElementById("signup");
 const note = document.getElementById("signup-note");
