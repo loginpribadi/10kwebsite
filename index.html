@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Your Brand AI</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Your Brand AI: an assistant that takes the repetitive work off your plate.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one centered 1120px column; asymmetric hero (copy left, live session panel right), then quiet bands. */
+:root {
+  --bg: #f2f4f6;
+  --surface: #ffffff;
+  --ink: #0f1a2a;
+  --muted: #56627a;
+  --line: #d9dee6;
+  --accent: #2f4cf0;
+  --accent-ink: #ffffff;
+  --signal: #e8792b;
+  --panel: #0f1a2a;
+  --panel-ink: #e6ebf5;
+  --panel-muted: #8c98b0;
+  --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Figtree", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --radius: 14px;
+  --max: 1120px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b111b; --surface: #121a27; --ink: #e8edf6; --muted: #98a3b8; --line: #243044;
+    --accent: #6f86ff; --accent-ink: #0b111b; --signal: #f29350;
+    --panel: #060a12; --panel-ink: #e6ebf5; --panel-muted: #7f8ba3;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b111b; --surface: #121a27; --ink: #e8edf6; --muted: #98a3b8; --line: #243044;
+  --accent: #6f86ff; --accent-ink: #0b111b; --signal: #f29350;
+  --panel: #060a12; --panel-ink: #e6ebf5; --panel-muted: #7f8ba3;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 1.0625rem/1.6 var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.08; margin: 0; text-wrap: balance; letter-spacing: -0.02em; }
+p { margin: 0; }
+
+.wrap {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.eyebrow {
+  font: 500 0.75rem/1 var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+.ph { box-shadow: inset 0 -0.18em 0 color-mix(in srgb, var(--signal) 45%, transparent); }
+
+/* Nav */
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.nav {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.nav .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 14px; }
+.logo { display: flex; align-items: center; gap: 10px; font: 700 1.15rem/1 var(--font-display); text-decoration: none; }
+.mark { width: 26px; height: 26px; border-radius: 8px; background: var(--accent); display: grid; place-items: center; }
+.mark span { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-ink); }
+.nav-links { display: flex; gap: 28px; font-size: 0.95rem; color: var(--muted); }
+.nav-links a { text-decoration: none; }
+.nav-links a:hover { color: var(--ink); }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font: 600 0.98rem/1 var(--font-body);
+  padding: 14px 20px; border-radius: 999px; border: 1px solid transparent;
+  text-decoration: none; cursor: pointer; transition: transform .15s ease, background .15s ease;
+}
+.btn-primary { background: var(--accent); color: var(--accent-ink); }
+.btn-primary:hover { transform: translateY(-1px); }
+.btn-ghost { border-color: var(--line); color: var(--ink); background: transparent; }
+.btn-ghost:hover { border-color: var(--muted); }
+.btn-sm { padding: 10px 16px; font-size: 0.9rem; }
+
+/* Hero */
+.hero .wrap { display: grid; grid-template-columns: 1.05fr 1fr; gap: 56px; align-items: center; padding-block: 80px 72px; }
+.hero-copy { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+.hero h1 { font-size: clamp(2.5rem, 5.6vw, 4.4rem); font-weight: 700; }
+.hero h1 em { font-style: normal; color: var(--accent); }
+.lede { font-size: 1.2rem; color: var(--muted); max-width: 34ch; }
+.cta-row { display: flex; flex-wrap: wrap; gap: 12px; }
+.proof { display: flex; flex-wrap: wrap; gap: 8px 22px; font: 400 0.85rem/1.4 var(--font-mono); color: var(--muted); }
+.proof b { color: var(--ink); font-weight: 500; }
+
+.session {
+  min-width: 0;
+  background: var(--panel); color: var(--panel-ink);
+  border-radius: 18px; padding: 20px;
+  font: 400 0.9rem/1.55 var(--font-mono);
+  box-shadow: 0 30px 60px -30px rgba(15, 26, 42, .45);
+}
+.session-bar { display: flex; justify-content: space-between; align-items: center; color: var(--panel-muted); font-size: 0.78rem; padding-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,.08); }
+.live { display: inline-flex; align-items: center; gap: 8px; }
+.live i { width: 7px; height: 7px; border-radius: 50%; background: var(--signal); animation: pulse 1.8s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .35; } }
+.turns { display: flex; flex-direction: column; gap: 16px; padding-top: 16px; }
+.turn small { display: block; color: var(--panel-muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 4px; }
+.turn.you p { color: var(--panel-ink); }
+.turn.ai p { color: var(--panel-ink); opacity: .92; }
+.steps-log { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; color: var(--panel-muted); }
+.steps-log li::before { content: "✓ "; color: var(--signal); }
+.caret { display: inline-block; width: 8px; height: 1.05em; background: var(--signal); vertical-align: text-bottom; animation: pulse 1s steps(1) infinite; }
+
+/* Sections */
+section { scroll-margin-top: 80px; }
+.band .wrap { padding-block: 88px; display: flex; flex-direction: column; gap: 44px; }
+.band + .band .wrap { border-top: 1px solid var(--line); }
+.head { display: flex; flex-direction: column; gap: 14px; max-width: 640px; }
+.head h2 { font-size: clamp(1.9rem, 3.6vw, 2.75rem); font-weight: 700; }
+.head p { color: var(--muted); font-size: 1.1rem; }
+
+.features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.feature { background: var(--surface); padding: 32px 28px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.feature .glyph { font: 500 0.8rem/1 var(--font-mono); color: var(--accent); }
+.feature h3 { font-size: 1.3rem; font-weight: 500; }
+.feature p { color: var(--muted); }
+
+.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; counter-reset: step; }
+.steps li { display: flex; flex-direction: column; gap: 10px; padding-top: 20px; border-top: 2px solid var(--ink); counter-increment: step; min-width: 0; }
+.steps li::before { content: "Step " counter(step); font: 500 0.75rem/1 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--signal); }
+.steps h3 { font-size: 1.25rem; font-weight: 500; }
+.steps p { color: var(--muted); }
+
+.uses { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.use { display: flex; gap: 18px; align-items: baseline; padding: 22px 24px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); min-width: 0; }
+.use b { font: 500 0.8rem/1 var(--font-mono); color: var(--muted); white-space: nowrap; }
+.use p { min-width: 0; }
+
+.faq { display: grid; gap: 0; border-top: 1px solid var(--line); max-width: 780px; }
+.faq details { border-bottom: 1px solid var(--line); padding: 20px 0; }
+.faq summary { cursor: pointer; font-weight: 600; font-size: 1.08rem; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; font-family: var(--font-mono); color: var(--accent); }
+.faq details[open] summary::after { content: "−"; }
+.faq details p { color: var(--muted); padding-top: 10px; max-width: 65ch; }
+
+.cta .wrap { padding-block: 24px 96px; }
+.cta-card {
+  background: var(--accent); color: var(--accent-ink);
+  border-radius: 22px; padding: clamp(28px, 5vw, 56px);
+  display: grid; grid-template-columns: 1.1fr 1fr; gap: 32px; align-items: center;
+}
+.cta-card h2 { font-size: clamp(1.8rem, 3.4vw, 2.6rem); }
+.cta-card p { opacity: .85; margin-top: 12px; }
+.signup { display: flex; flex-wrap: wrap; gap: 10px; min-width: 0; }
+.signup label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.signup input {
+  flex: 1 1 220px; min-width: 0;
+  font: 400 1rem/1 var(--font-body); padding: 14px 18px; border-radius: 999px;
+  border: 1px solid transparent; background: var(--accent-ink); color: var(--ink);
+}
+.signup .btn { background: var(--ink); color: var(--bg); }
+.signup-note { flex-basis: 100%; font-size: 0.9rem; min-height: 1.4em; }
+
+footer .wrap { padding-block: 32px 40px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--line); }
+footer nav { display: flex; gap: 20px; }
+footer a { text-decoration: none; }
+footer a:hover { color: var(--ink); }
+
+@media (max-width: 880px) {
+  .hero .wrap, .cta-card { grid-template-columns: 1fr; }
+  .hero .wrap { padding-block: 48px 56px; gap: 40px; }
+  .features, .steps, .uses { grid-template-columns: 1fr; }
+  .nav-links { display: none; }
+  .band .wrap { padding-block: 64px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="logo" href="#top" aria-label="Home"><span class="mark"><span></span></span><span data-site="brand">Your Brand</span></a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#uses">Use cases</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <a class="btn btn-primary btn-sm" href="#join" data-site="cta">Get early access</a>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-copy">
+        <span class="eyebrow" data-site="category">AI assistant · Early access</span>
+        <h1 data-site="headline">The AI that does the <em>busywork</em>, so you can do the real work.</h1>
+        <p class="lede" data-site="tagline"><span class="ph">Your one-line tagline goes here.</span> Tell people what your AI does and who it is for in a single sentence.</p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="#join" data-site="cta">Get early access</a>
+          <a class="btn btn-ghost" href="#how">See how it works</a>
+        </div>
+        <div class="proof">
+          <span><b>Set up</b> in minutes</span>
+          <span><b>Works with</b> the tools you use</span>
+          <span><b>Your data</b> stays yours</span>
+        </div>
+      </div>
+
+      <div class="session" aria-label="Example conversation">
+        <div class="session-bar">
+          <span class="live"><i></i>session · example</span>
+          <span data-site="brand">Your Brand</span>
+        </div>
+        <div class="turns">
+          <div class="turn you">
+            <small>You</small>
+            <p>Summarize this week's customer emails and draft replies to anything urgent.</p>
+          </div>
+          <div class="turn ai">
+            <small data-site="brand">Your Brand</small>
+            <p>Read 142 emails. 6 need a reply today, mostly about delayed orders. Drafts are ready for your review.</p>
+            <ul class="steps-log">
+              <li>Grouped by topic</li>
+              <li>Flagged 6 urgent threads</li>
+              <li>Drafted replies in your tone</li>
+            </ul>
+          </div>
+          <div class="turn you">
+            <small>You</small>
+            <p>Send the first three <span class="caret" aria-hidden="true"></span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="features">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow">What it does</span>
+        <h2>Built to take work off your plate, not add to it.</h2>
+        <p>Replace these three with the things your AI is best at. Keep each one to a promise a customer can check.</p>
+      </div>
+      <div class="features">
+        <article class="feature">
+          <span class="glyph">/understand</span>
+          <h3>Understands your context</h3>
+          <p>Learns from your documents, past conversations and preferences, so answers fit how you actually work.</p>
+        </article>
+        <article class="feature">
+          <span class="glyph">/act</span>
+          <h3>Takes action, not just notes</h3>
+          <p>Drafts, schedules, files and follows up across your tools, and checks with you before anything important goes out.</p>
+        </article>
+        <article class="feature">
+          <span class="glyph">/improve</span>
+          <h3>Gets better every week</h3>
+          <p>Every correction you make teaches it. The longer you use it, the less you need to explain.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="how">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow">How it works</span>
+        <h2>From sign-up to first result in three steps.</h2>
+      </div>
+      <ol class="steps">
+        <li>
+          <h3>Connect your tools</h3>
+          <p>Link email, calendar, docs or whatever your work runs on. Read-only until you say otherwise.</p>
+        </li>
+        <li>
+          <h3>Tell it what you need</h3>
+          <p>Ask in plain language, the way you would ask a colleague. No prompts to memorize.</p>
+        </li>
+        <li>
+          <h3>Review and approve</h3>
+          <p>See exactly what it did and why. Approve, edit or send it back with a note.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="band" id="uses">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow">Use cases</span>
+        <h2>Who it's for.</h2>
+        <p>Swap these for your real audiences.</p>
+      </div>
+      <div class="uses">
+        <div class="use"><b>Founders</b><p>Keep investors, customers and the team updated without losing a day a week to it.</p></div>
+        <div class="use"><b>Support</b><p>Triage the inbox, draft answers and surface the conversations that need a human.</p></div>
+        <div class="use"><b>Marketing</b><p>Turn one idea into posts, emails and briefs that sound like your brand.</p></div>
+        <div class="use"><b>Operations</b><p>Chase approvals, update trackers and keep recurring tasks from slipping.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="faq">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow">FAQ</span>
+        <h2>Questions people ask first.</h2>
+      </div>
+      <div class="faq">
+        <details open>
+          <summary>What does <span data-site="brand">Your Brand</span> actually do?</summary>
+          <p>Replace this with a two-sentence description of your product: the job it does, and the result a customer gets.</p>
+        </details>
+        <details>
+          <summary>Is my data safe?</summary>
+          <p>Describe how you store and protect customer data, and whether it is used to train models.</p>
+        </details>
+        <details>
+          <summary>How much does it cost?</summary>
+          <p>Early access is free. Add your pricing here once it is set.</p>
+        </details>
+        <details>
+          <summary>Which tools does it work with?</summary>
+          <p>List your integrations here, for example email, calendar, Slack, Notion and Google Drive.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta" id="join">
+    <div class="wrap">
+      <div class="cta-card">
+        <div>
+          <h2>Be first in line.</h2>
+          <p>Join the early access list and we'll let you know as soon as your spot opens.</p>
+        </div>
+        <form class="signup" id="signup" novalidate>
+          <label for="signup-email">Email address</label>
+          <input id="signup-email" name="email" type="email" placeholder="you@company.com" autocomplete="email" required>
+          <button class="btn" type="submit" data-site="cta">Get early access</button>
+          <p class="signup-note" id="signup-note" role="status"></p>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© <span id="year">2026</span> <span data-site="brand">Your Brand</span>. All rights reserved.</span>
+    <nav aria-label="Footer">
+      <a href="#features">Features</a>
+      <a href="#faq">FAQ</a>
+      <span data-site="email">hello@yourbrand.ai</span>
+    </nav>
+  </div>
+</footer>
+
+<script>
+/* ------------------------------------------------------------------
+   Edit your brand here. Any value left as null keeps the text in the HTML.
+   ------------------------------------------------------------------ */
+const SITE = {
+  brand: null,     // e.g. "Nova"
+  tagline: null,   // e.g. "Your AI chief of staff for small teams."
+  headline: null,  // e.g. "Run your week in ten minutes."
+  category: null,  // e.g. "AI assistant · Early access"
+  cta: null,       // e.g. "Join the waitlist"
+  email: null,     // e.g. "hello@nova.ai"
+  // Paste a form endpoint (Formspree, Tally, Google Apps Script, ...) to collect sign-ups.
+  formEndpoint: null
+};
+
+document.querySelectorAll("[data-site]").forEach(el => {
+  const v = SITE[el.dataset.site];
+  if (v) el.textContent = v;
+});
+if (SITE.brand) document.title = SITE.brand;
+document.getElementById("year").textContent = new Date().getFullYear();
+
+const form = document.getElementById("signup");
+const note = document.getElementById("signup-note");
+form.addEventListener("submit", async e => {
+  e.preventDefault();
+  const email = form.email.value.trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    note.textContent = "Enter a valid email address, like you@company.com.";
+    form.email.focus();
+    return;
+  }
+  if (SITE.formEndpoint) {
+    try {
+      const res = await fetch(SITE.formEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify({ email })
+      });
+      if (!res.ok) throw new Error(res.status);
+    } catch {
+      note.textContent = "Couldn't save your email right now. Please try again in a moment.";
+      return;
+    }
+  }
+  note.textContent = "You're on the list. We'll email " + email + " when your spot opens.";
+  form.reset();
+});
+</script>
+</body>
+</html>
