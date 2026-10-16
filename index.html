@@ -228,6 +228,38 @@ footer nav { display: flex; gap: 20px; }
 footer a { text-decoration: none; }
 footer a:hover { color: var(--ink); }
 
+/* Scroll film: a tall track with a pinned stage; scroll position scrubs the film. */
+.scrolly { position: relative; height: 420vh; background: #060912; color: #f3f6fc; }
+.scrolly-stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
+.scrolly-stage canvas, .scrolly-stage video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.scrolly-stage video:not([src]) { display: none; }
+.scrolly-stage::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,.6) 100%); }
+.chapters { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.chapter {
+  position: absolute; left: 0; right: 0; bottom: 14vh;
+  max-width: var(--max); margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 12px;
+  opacity: 0; transform: translateY(24px); will-change: opacity, transform;
+}
+.chapter:first-child { opacity: 1; transform: none; }
+.chapter .eyebrow { color: #f29350; }
+.chapter h2 { font-size: clamp(2rem, 5vw, 3.8rem); font-weight: 700; max-width: 16ch; text-shadow: 0 2px 30px rgba(0,0,0,.5); }
+.chapter p { color: #b4bfd4; font-size: 1.15rem; max-width: 40ch; }
+.scrolly-progress { position: absolute; z-index: 2; right: max(16px, env(safe-area-inset-right, 0px)); top: 50%; transform: translateY(-50%); width: 2px; height: 120px; background: rgba(255,255,255,.15); border-radius: 2px; }
+.scrolly-progress i { position: absolute; left: 0; top: 0; width: 100%; height: 0; background: #f29350; border-radius: 2px; }
+.scrolly-hint { position: absolute; z-index: 2; left: 50%; top: 24px; transform: translateX(-50%); font: 500 0.72rem/1 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: rgba(243,246,252,.55); }
+
+/* Reduced motion: no pinning or scrubbing; one still frame with the chapters stacked below it. */
+.scrolly.static { height: auto; }
+.scrolly.static .scrolly-stage { position: relative; height: auto; overflow: visible; }
+.scrolly.static .scrolly-stage canvas, .scrolly.static .scrolly-stage video { height: 70vh; bottom: auto; }
+.scrolly.static .scrolly-stage::after { height: 70vh; bottom: auto; }
+.scrolly.static .chapters { position: relative; inset: auto; display: grid; gap: 40px; padding-block: 64vh 72px; }
+.scrolly.static .chapter { position: static; opacity: 1; transform: none; }
+.scrolly.static .scrolly-progress, .scrolly.static .scrolly-hint { display: none; }
+
 @media (max-width: 880px) {
   .hero .wrap, .cta-card { grid-template-columns: 1fr; }
   .hero .wrap { padding-block: 56px 80px; gap: 40px; }
@@ -303,6 +335,37 @@ footer a:hover { color: var(--ink); }
             <small>You</small>
             <p>Send the first three <span class="caret" aria-hidden="true"></span></p>
           </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scrolly" id="story" aria-label="How it thinks">
+    <div class="scrolly-stage">
+      <canvas id="scroll-canvas" aria-hidden="true"></canvas>
+      <video id="scroll-video" muted playsinline preload="auto" aria-hidden="true"></video>
+      <span class="scrolly-hint" aria-hidden="true">Scroll</span>
+      <div class="scrolly-progress" aria-hidden="true"><i id="scroll-bar"></i></div>
+      <div class="chapters" id="chapters">
+        <div class="chapter" data-from="0" data-to="0.24">
+          <span class="eyebrow">01 · Scattered</span>
+          <h2>Your work is everywhere.</h2>
+          <p>Emails, docs, chats and calendars, each holding a piece of the picture.</p>
+        </div>
+        <div class="chapter" data-from="0.28" data-to="0.52">
+          <span class="eyebrow">02 · Gathered</span>
+          <h2><span data-site="brand">Your Brand</span> pulls it together.</h2>
+          <p>It reads across your tools and builds one picture of what matters right now.</p>
+        </div>
+        <div class="chapter" data-from="0.56" data-to="0.78">
+          <span class="eyebrow">03 · Understood</span>
+          <h2>It sees how it all connects.</h2>
+          <p>People, deadlines and decisions, linked the way you would link them yourself.</p>
+        </div>
+        <div class="chapter" data-from="0.82" data-to="1.01">
+          <span class="eyebrow">04 · Done</span>
+          <h2>Then it gets to work.</h2>
+          <p>Drafts, follow-ups and updates, ready for you to approve.</p>
         </div>
       </div>
     </div>
@@ -445,7 +508,10 @@ const SITE = {
   formEndpoint: null,
   // Hero film: path or URL to an .mp4/.webm, e.g. "assets/hero.mp4". Leave null to show the animated fallback.
   heroVideo: null,
-  heroPoster: null // optional still image shown while the video loads, e.g. "assets/hero-poster.jpg"
+  heroPoster: null, // optional still image shown while the video loads, e.g. "assets/hero-poster.jpg"
+  // Scrolling film (the pinned section after the hero). Use ONE of these, or leave both null for the animated placeholder.
+  scrollVideo: null,  // e.g. "assets/scroll.mp4" (encode with a keyframe every frame for smooth scrubbing, see README)
+  scrollFrames: null  // image sequence, e.g. { path: "assets/frames/frame_{i}.webp", count: 120, pad: 4 }
 };
 
 document.querySelectorAll("[data-site]").forEach(el => {
@@ -539,6 +605,146 @@ toggle.addEventListener("click", () => setPlaying(!playing));
 addEventListener("resize", resize);
 resize();
 setPlaying(playing);
+
+/* Scrolling film: scroll progress (0 to 1) through #story picks the frame. */
+(() => {
+  const section = document.getElementById("story");
+  const sc = document.getElementById("scroll-canvas");
+  const sv = document.getElementById("scroll-video");
+  const bar = document.getElementById("scroll-bar");
+  const chapters = [...document.querySelectorAll("#chapters .chapter")];
+  const g = sc.getContext("2d");
+  let W = 0, H = 0, target = 0, shown = -1, ticking = false;
+
+  if (reduceMotion) section.classList.add("static");
+
+  // Source 1: real video, scrubbed by currentTime.
+  let videoReady = false;
+  if (SITE.scrollVideo) {
+    sv.src = SITE.scrollVideo;
+    sv.addEventListener("loadedmetadata", () => { videoReady = true; sc.style.display = "none"; render(true); }, { once: true });
+    sv.addEventListener("error", () => { sv.removeAttribute("src"); videoReady = false; sc.style.display = ""; }, { once: true });
+  }
+
+  // Source 2: image sequence drawn to the canvas.
+  const frames = [];
+  if (!SITE.scrollVideo && SITE.scrollFrames) {
+    const { path, count, pad = 0 } = SITE.scrollFrames;
+    for (let i = 1; i <= count; i++) {
+      const img = new Image();
+      img.src = path.replace("{i}", String(i).padStart(pad, "0"));
+      if (i === 1) img.onload = () => render(true);
+      frames.push(img);
+    }
+  }
+
+  // Source 3 (placeholder): scattered points gather into a sphere, then link into a network.
+  const N = 520, pts = [];
+  for (let i = 0; i < N; i++) {
+    const y = 1 - (i / (N - 1)) * 2, r = Math.sqrt(1 - y * y), th = i * 2.39996;
+    pts.push({
+      sx: (Math.random() - .5) * 3.2, sy: (Math.random() - .5) * 2.2, sz: (Math.random() - .5) * 2,
+      tx: Math.cos(th) * r, ty: y, tz: Math.sin(th) * r,
+      warm: Math.random() < .12, d: Math.random() * .25
+    });
+  }
+  const links = [];
+  for (let i = 0; i < N; i++) for (let k = 1; k <= 2; k++) links.push([i, (i + k * 21) % N]);
+  const ease = x => x < 0 ? 0 : x > 1 ? 1 : x * x * (3 - 2 * x);
+
+  function drawPlaceholder(p) {
+    g.fillStyle = "#060912"; g.fillRect(0, 0, W, H);
+    const cx = W / 2, cy = H * 0.42, R = Math.min(W, H) * (0.26 + 0.1 * ease((p - .6) / .4));
+    const rot = p * Math.PI * 2.2, cr = Math.cos(rot), sr = Math.sin(rot);
+    const core = ease((p - .25) / .35);
+    if (core > 0) {
+      const glow = g.createRadialGradient(cx, cy, 0, cx, cy, R * 1.6);
+      glow.addColorStop(0, `rgba(111,134,255,${.35 * core})`);
+      glow.addColorStop(.4, `rgba(232,121,43,${.08 * core})`);
+      glow.addColorStop(1, "rgba(6,9,18,0)");
+      g.fillStyle = glow; g.fillRect(0, 0, W, H);
+    }
+    const proj = pts.map(o => {
+      const m = ease((p - o.d) / .5);
+      let x = o.sx + (o.tx - o.sx) * m, y = o.sy + (o.ty - o.sy) * m, z = o.sz + (o.tz - o.sz) * m;
+      const xr = x * cr - z * sr, zr = x * sr + z * cr;
+      const s = 1 / (1.9 - zr * .5);
+      return { x: cx + xr * R * s * 1.4, y: cy + y * R * s * 1.4, s, warm: o.warm };
+    });
+    const net = ease((p - .55) / .25);
+    if (net > 0) {
+      g.lineWidth = 0.6;
+      for (const [a, b] of links) {
+        const A = proj[a], B = proj[b];
+        g.strokeStyle = `rgba(143,162,255,${.22 * net * Math.min(A.s, B.s)})`;
+        g.beginPath(); g.moveTo(A.x, A.y); g.lineTo(B.x, B.y); g.stroke();
+      }
+    }
+    const act = ease((p - .82) / .15);
+    for (const q of proj) {
+      const a = .35 + .55 * q.s;
+      g.fillStyle = q.warm ? `rgba(242,147,80,${a})` : `rgba(215,224,255,${a})`;
+      const rr = (q.warm ? 2.2 + act * 2 : 1.4) * q.s;
+      g.beginPath(); g.arc(q.x, q.y, rr, 0, 6.283); g.fill();
+    }
+  }
+
+  function drawFrame(p) {
+    const img = frames[Math.min(frames.length - 1, Math.round(p * (frames.length - 1)))];
+    if (!img || !img.complete || !img.naturalWidth) return drawPlaceholder(p);
+    const s = Math.max(W / img.naturalWidth, H / img.naturalHeight);
+    const iw = img.naturalWidth * s, ih = img.naturalHeight * s;
+    g.drawImage(img, (W - iw) / 2, (H - ih) / 2, iw, ih);
+  }
+
+  function progress() {
+    if (reduceMotion) return 0.72;
+    const r = section.getBoundingClientRect();
+    const span = section.offsetHeight - innerHeight;
+    return span > 0 ? Math.min(1, Math.max(0, -r.top / span)) : 0;
+  }
+
+  function render(force) {
+    const p = target;
+    if (!force && Math.abs(p - shown) < 0.0005) return;
+    shown = p;
+    if (videoReady && sv.duration) sv.currentTime = p * (sv.duration - 0.05);
+    else if (frames.length) drawFrame(p);
+    else drawPlaceholder(p);
+    bar.style.height = (p * 100) + "%";
+    if (reduceMotion) return;
+    for (const c of chapters) {
+      const a = +c.dataset.from, b = +c.dataset.to, fade = 0.04;
+      const o = Math.min(a <= 0 ? 1 : ease((p - a) / fade), b >= 1 ? 1 : ease((b - p) / fade));
+      c.style.opacity = o;
+      c.style.transform = `translateY(${(1 - o) * 24}px)`;
+    }
+  }
+
+  // Ease the shown frame toward the scroll target so scrubbing stays smooth on touch scrolling.
+  let current = 0;
+  function tick() {
+    const goal = progress();
+    current += (goal - current) * 0.18;
+    if (Math.abs(goal - current) < 0.0008) current = goal;
+    target = current;
+    render(false);
+    if (current !== goal) requestAnimationFrame(tick); else ticking = false;
+  }
+  function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(tick); } }
+
+  function size() {
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    W = sc.clientWidth; H = sc.clientHeight;
+    sc.width = W * dpr; sc.height = H * dpr;
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    current = target = progress();
+    render(true);
+  }
+  addEventListener("scroll", onScroll, { passive: true });
+  addEventListener("resize", size);
+  size();
+})();
 
 const form = document.getElementById("signup");
 const note = document.getElementById("signup-note");
